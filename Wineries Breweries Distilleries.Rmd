@@ -1,0 +1,40 @@
+---
+title: "Wineries, Breweries, and Distilleries"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+Data from the [NY Open Data Portal](http://data.ny.gov) about Wineries, Breweries, and Distilleries which can be found [here](https://data.ny.gov/Economic-Development/Wineries-Breweries-and-Distilleries/vpry-a23m)
+
+First we read in data.
+```{r}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+dat <- read.csv("https://data.ny.gov/api/views/vpry-a23m/rows.csv", stringsAsFactors = FALSE)
+```
+
+Group by then sum data.
+```{r}
+topCities <- dat %>% group_by(City) %>% tally() %>% data.frame() %>% filter(n>10)
+Alcohol <- dat %>% group_by(City, License.Type.Name) %>% tally() %>% data.frame() %>% filter(City %in% topCities$City)
+```
+
+Create chart using ggplot and plotly
+```{r}
+p <- ggplot(Alcohol, aes(City, n, fill = License.Type.Name)) +
+  geom_bar(stat="identity") + 
+  theme_bw() +
+  theme(axis.line = element_line(colour = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    panel.background = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Wineries, Breweries, and Distilleries",
+       x = "City",
+       y = "Count")
+ggplotly(p)
+```
+
