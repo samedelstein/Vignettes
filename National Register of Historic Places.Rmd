@@ -1,0 +1,43 @@
+---
+title: "R Notebook"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+First we load our libraries
+
+```{r}
+library(jsonlite)
+library(dplyr)
+library(ggmap)
+library(ggplot2)
+library(leaflet)
+```
+
+Then we read in our data from [New York's Open Data Portal](http://data.ny.gov). Here is the [National Register of Historic Places dataset](https://data.ny.gov/Recreation/National-Register-of-Historic-Places/iisn-hnyv). The data is outputted in a json format, so we use the jsonlite package.
+
+```{r}
+url <- "https://data.ny.gov/resource/wtyn-j33w.json"
+dat <- fromJSON(url)
+head(dat)
+```
+
+Now we are going to filter the data for just historic places in Onondaga County.
+
+```{r}
+syracuse.landmarks <- dat[dat$county == "Onondaga",]
+head(syracuse.landmarks)
+
+```
+
+And finally we will create a map using the leaflet package, which helps us create interactive maps.
+
+```{r}
+m <- leaflet() %>%
+  setView(lng = -76.125, lat = 43.041, zoom = 10) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addCircleMarkers(lng=syracuse.landmarks$x, lat=syracuse.landmarks$y, popup=syracuse.landmarks$resource_name, clusterOptions = markerClusterOptions())
+m
+```
+
